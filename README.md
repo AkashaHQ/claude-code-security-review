@@ -38,6 +38,8 @@ jobs:
         with:
           comment-pr: true
           claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          # OR use OAuth token instead:
+          # claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 ```
 
 ## Security Considerations
@@ -50,7 +52,8 @@ This action is not hardened against prompt injection attacks and should only be 
 
 | Input | Description | Default | Required |
 |-------|-------------|---------|----------|
-| `claude-api-key` | Anthropic Claude API key for security analysis. <br>*Note*: This API key needs to be enabled for both the Claude API and Claude Code usage. | None | Yes |
+| `claude-api-key` | Anthropic Claude API key for security analysis. <br>*Note*: This API key needs to be enabled for both the Claude API and Claude Code usage. | None | No* |
+| `claude-oauth-token` | Claude Code OAuth token (alternative to `claude-api-key`). | None | No* |
 | `comment-pr` | Whether to comment on PRs with findings | `true` | No |
 | `upload-results` | Whether to upload results as artifacts | `true` | No |
 | `exclude-directories` | Comma-separated list of directories to exclude from scanning | None | No |
@@ -59,6 +62,8 @@ This action is not hardened against prompt injection attacks and should only be 
 | `run-every-commit` | Run ClaudeCode on every commit (skips cache check). Warning: May increase false positives on PRs with many commits. | `false` | No |
 | `false-positive-filtering-instructions` | Path to custom false positive filtering instructions text file | None | No |
 | `custom-security-scan-instructions` | Path to custom security scan instructions text file to append to audit prompt | None | No |
+
+\* One of `claude-api-key` or `claude-oauth-token` must be provided.
 
 ### Action Outputs
 
