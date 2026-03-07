@@ -5,6 +5,7 @@
  */
 
 const fs = require('fs');
+const path = require('path');
 const { spawnSync } = require('child_process');
 
 // Parse GitHub context from environment
@@ -93,14 +94,18 @@ async function run() {
     // Read the findings
     let newFindings = [];
     try {
-      const findingsData = fs.readFileSync('findings.json', 'utf8');
+      const findingsPath = process.env.GITHUB_WORKSPACE
+        ? path.join(process.env.GITHUB_WORKSPACE, 'findings.json')
+        : 'findings.json';
+      const findingsData = fs.readFileSync(findingsPath, 'utf8');
       newFindings = JSON.parse(findingsData);
     } catch (e) {
       console.log('Could not read findings file');
       return;
     }
-    
+
     if (newFindings.length === 0) {
+      console.log('✅ No security findings');
       return;
     }
     

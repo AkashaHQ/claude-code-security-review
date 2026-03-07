@@ -304,6 +304,10 @@ runs:
         if [ -f findings.json ]; then
           cp findings.json ${{ github.workspace }}/findings.json || true
         fi
+        # Ensure findings.json always exists at workspace root
+        if [ ! -f "$GITHUB_WORKSPACE/findings.json" ]; then
+          echo '[]' > "$GITHUB_WORKSPACE/findings.json"
+        fi
         if [ -f claudecode/claudecode-results.json ]; then
           cp claudecode/claudecode-results.json ${{ github.workspace }}/claudecode-results.json || true
         fi
