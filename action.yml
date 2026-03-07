@@ -83,7 +83,9 @@ runs:
       if: github.event_name == 'pull_request'
       uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0 pinned to commit hash
       with:
-        path: .claudecode-marker
+        path: |
+          .claudecode-marker
+          findings.json
         key: claudecode-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-${{ github.sha }}
         restore-keys: |
           claudecode-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-
@@ -156,7 +158,9 @@ runs:
       if: steps.claudecode-check.outputs.enable_claudecode == 'true' && github.event_name == 'pull_request'
       uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0 pinned to commit hash
       with:
-        path: .claudecode-marker
+        path: |
+          .claudecode-marker
+          findings.json
         key: claudecode-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-${{ github.sha }}
     
     - name: Set up Node.js
@@ -178,6 +182,19 @@ runs:
         sudo apt-get update && sudo apt-get install -y jq
         echo "::endgroup::"
     
+    - name: Restore findings from cache on skipped scan
+      id: claudecode-scan-skipped
+      if: steps.claudecode-check.outputs.enable_claudecode == 'false' && github.event_name == 'pull_request'
+      shell: bash
+      run: |
+        if [ -f "findings.json" ]; then
+          cp findings.json "$GITHUB_WORKSPACE/findings.json"
+          echo "Restored findings.json from cache"
+        else
+          echo '[]' > "$GITHUB_WORKSPACE/findings.json"
+          echo "No cached findings found, using empty"
+        fi
+
     - name: Run ClaudeCode scan
       id: claudecode-scan
       if: steps.claudecode-check.outputs.enable_claudecode == 'true'
@@ -303,6 +320,10 @@ runs:
         # This ensures artifact upload and PR commenting can find them
         if [ -f findings.json ]; then
           cp findings.json ${{ github.workspace }}/findings.json || true
+        fi
+        # Ensure findings.json always exists at workspace root
+        if [ ! -f "$GITHUB_WORKSPACE/findings.json" ]; then
+          echo '[]' > "$GITHUB_WORKSPACE/findings.json"
         fi
         if [ -f claudecode/claudecode-results.json ]; then
           cp claudecode/claudecode-results.json ${{ github.workspace }}/claudecode-results.json || true
